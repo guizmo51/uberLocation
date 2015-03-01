@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <title>Location UBER par temps d'attente.</title>
+    <style>
+      html, body, #map-canvas0,#map-canvas1,#map-canvas2,#map-canvas3{
+        height: 400px;
+        width: 400px;
+        
+      }
+    </style>
+    <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+    <script>
+   var map=[];
+
+
+var cityCircle;
+
+function initialize() {
+  // Create the map.
+  var mapOptions = {
+    zoom: 12,
+    center: new google.maps.LatLng(48.854536,2.348005),
+    mapTypeId: google.maps.MapTypeId.TERRAIN
+  };
+
+  map[0] = new google.maps.Map(document.getElementById('map-canvas0'),
+      mapOptions);
+    map[1] = new google.maps.Map(document.getElementById('map-canvas1'),
+      mapOptions);
+      map[2] = new google.maps.Map(document.getElementById('map-canvas2'),
+      mapOptions);
+        map[3] = new google.maps.Map(document.getElementById('map-canvas3'),
+      mapOptions);
+
+
+
+}
+
+function drawCircle(lat,lon,rad,color, index, model){
+ var circleDraw = new google.maps.Circle({
+      strokeColor: color['color'],
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: color['color'],
+      fillOpacity: 0.35,
+      map: map[color['id']],
+      center: new google.maps.LatLng(lat,lon),
+      radius: (Math.sqrt(rad) * 100)*1.9
+    });
+
+}
+google.maps.event.addDomListener(window, 'load', initialize);
+
+    </script>
+    <script>
+    $( document ).ready(function() {
+      var list_color = ['red','blue','green','yellow'];
+  $.ajax({
+  url: "http://uberapi.local/", /*A changer , url locale d'appel à l'API */
+  context: document.body
+}).done(function(data) {
+  cars = data.cars;
+  var colors = [];
+  var gpsCoord = data.coord;
+  var cpt_color=0;
+  $.each(cars,function(index,val){
+    colors[index]=[];
+    colors[index]['color']=list_color[cpt_color];
+    colors[index]['id']=cpt_color;
+    cpt_color++;
+  });
+  $.each(cars,function(index,val){
+    $.each(val,function(key,value){
+     
+      var lat = gpsCoord[key]['lat'];
+      var lon = gpsCoord[key]['lon'];
+
+      drawCircle(lat,lon,value['tps'],colors[index], index, value['model']);
+
+    });
+  });
+});
+});
+    
+    </script>
+  </head>
+  <body>
+    <h2>UberPOP</h2>
+    <div id="map-canvas0" width="400px"></div>
+    <hr/>
+    <h2>UberX</h2>
+    <div id="map-canvas1" width="400px"></div>
+      <hr/>
+    <h2>UberBerline</h2>
+    <div id="map-canvas2" width="400px"></div>
+      <hr/>
+    <h2>UberVan</h2>
+    <div id="map-canvas3" width="400px"></div>
+    <hr/>
+  </body>
+</html>
